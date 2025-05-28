@@ -281,7 +281,7 @@ input[type="text"]:focus {
     background-color: var(--bg-secondary);
     border-radius: var(--radius-sm);
     padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
     box-shadow: 0 1px 3px var(--shadow-color);
     transition: box-shadow var(--transition-speed);
 }
