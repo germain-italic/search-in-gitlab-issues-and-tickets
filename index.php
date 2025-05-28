@@ -11,9 +11,7 @@ if (file_exists(__DIR__ . '/.env')) {
 
 // Check if .env file exists and contains required variables
 $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
-?>
-
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,62 +19,7 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
     <title>GitLab Search Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #FC6D26;
-            --primary-dark: #DB5B1F;
-        }
-        
-        .btn-gitlab {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-gitlab:hover {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
-            color: white;
-        }
-
-        .gitlab-logo {
-            color: var(--primary-color);
-            font-size: 2rem;
-        }
-
-        .highlight {
-            background-color: rgba(252, 109, 38, 0.2);
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-
-        .project-option {
-            cursor: pointer;
-            padding: 8px 16px;
-        }
-
-        .project-option:hover {
-            background-color: #f8f9fa;
-        }
-
-        .selected-project {
-            display: inline-block;
-            background-color: #f8f9fa;
-            padding: 4px 8px;
-            margin: 4px;
-            border-radius: 4px;
-        }
-
-        .selected-project .remove {
-            cursor: pointer;
-            color: #6c757d;
-            margin-left: 8px;
-        }
-
-        .selected-project .remove:hover {
-            color: #dc3545;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body class="bg-light">
     <div class="min-vh-100 d-flex flex-column">
