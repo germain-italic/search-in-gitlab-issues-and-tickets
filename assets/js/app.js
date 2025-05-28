@@ -1,3 +1,4 @@
+// Wait for the DOM to be fully loaded before executing
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const searchForm = document.getElementById('searchForm');
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     projectFilter.addEventListener('input', filterProjects);
     searchForm.addEventListener('submit', handleSearch);
     
+    // Close dropdown when clicking outside
     document.addEventListener('click', function(event) {
         if (!projectFilter.contains(event.target) && !projectDropdown.contains(event.target)) {
             projectDropdown.classList.remove('show');
@@ -27,6 +29,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Functions
+    
+    /**
+     * Fetch projects from the GitLab API
+     */
     function fetchProjects() {
         // Show loading state
         projectDropdown.innerHTML = `
@@ -59,6 +65,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
+    /**
+     * Get the display name for a project including its group path
+     * @param {Object} project - The project object
+     * @returns {string} The formatted display name
+     */
+    function getProjectDisplayName(project) {
+        const pathParts = project.path_with_namespace.split('/');
+        const projectName = pathParts.pop(); // Get the project name
+        const groupPath = pathParts.join(' / '); // Join the remaining parts with slashes
+        return groupPath ? `${groupPath} - ${project.name}` : project.name;
+    }
+    
+    /**
+     * Render project options in the dropdown
+     * @param {Array} projectsToRender - Array of projects to display
+     */
     function renderProjectOptions(projectsToRender) {
         if (projectsToRender.length === 0) {
             projectDropdown.innerHTML = `
@@ -105,12 +127,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add project options
         projectsToRender.forEach(project => {
             const isSelected = selectedProjectIds.includes(project.id);
+            const displayName = getProjectDisplayName(project);
             
             const option = document.createElement('div');
             option.className = 'project-option';
             option.innerHTML = `
                 <input type="checkbox" id="project-${project.id}" ${isSelected ? 'checked' : ''}>
-                <label for="project-${project.id}">${project.name}</label>
+                <label for="project-${project.id}">${displayName}</label>
             `;
             
             option.addEventListener('click', function() {
@@ -134,6 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    /**
+     * Update the selected projects display and form input
+     */
     function updateSelectedProjects() {
         // Update hidden input for form submission
         const existingInput = document.getElementById('selectedProjectsInput');
@@ -152,10 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedProjectsData = projects.filter(project => selectedProjectIds.includes(project.id));
         
         selectedProjectsData.forEach(project => {
+            const displayName = getProjectDisplayName(project);
             const projectElement = document.createElement('div');
             projectElement.className = 'selected-project';
             projectElement.innerHTML = `
-                <span>${project.name}</span>
+                <span>${displayName}</span>
                 <i class="fas fa-times remove" data-id="${project.id}"></i>
             `;
             
@@ -176,25 +203,40 @@ document.addEventListener('DOMContentLoaded', function() {
         searchButton.disabled = selectedProjectIds.length === 0;
     }
     
+    /**
+     * Show the project dropdown
+     */
     function showDropdown() {
         projectDropdown.classList.add('show');
     }
     
+    /**
+     * Filter projects based on search input
+     */
     function filterProjects() {
         const searchTerm = projectFilter.value.toLowerCase();
         const filteredProjects = filterProjectsList(searchTerm);
         renderProjectOptions(filteredProjects);
     }
     
+    /**
+     * Filter the projects list based on search term
+     * @param {string} searchTerm - The search term to filter by
+     * @returns {Array} Filtered array of projects
+     */
     function filterProjectsList(searchTerm) {
         if (!searchTerm) return projects;
         
         return projects.filter(project => {
-            return project.name.toLowerCase().includes(searchTerm) || 
-                   (project.path_with_namespace && project.path_with_namespace.toLowerCase().includes(searchTerm));
+            const displayName = getProjectDisplayName(project);
+            return displayName.toLowerCase().includes(searchTerm);
         });
     }
     
+    /**
+     * Handle the search form submission
+     * @param {Event} event - The form submission event
+     */
     function handleSearch(event) {
         event.preventDefault();
         
@@ -240,6 +282,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    /**
+     * Render search results
+     * @param {Object} data - The search results data
+     */
     function renderResults(data) {
         if (!data || Object.keys(data).length === 0) {
             results.innerHTML = `
@@ -339,6 +385,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    /**
+     * Highlight search term in text
+     * @param {string} text - The text to highlight
+     * @param {string} searchTerm - The term to highlight
+     * @returns {string} Text with highlighted search term
+     */
     function highlightSearchTerm(text, searchTerm) {
         if (!text || !searchTerm) return text;
         
