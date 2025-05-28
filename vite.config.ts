@@ -7,4 +7,10 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  base: '/', // Ensure assets are loaded from the correct path
+  build: {
+    outDir: 'dist', // Output directory for the build
+    emptyOutDir: true, // Clean the output directory before build
+    sourcemap: false, // Disable sourcemaps in production
+  },
 });

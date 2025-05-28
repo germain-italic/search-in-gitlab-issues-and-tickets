@@ -15,6 +15,7 @@ A web application that allows you to search for strings across GitLab issues and
 
 - PHP 7.4 or higher
 - Composer
+- Node.js and npm (for frontend build)
 - Access to a GitLab instance with API access
 
 ## Installation
@@ -23,12 +24,20 @@ A web application that allows you to search for strings across GitLab issues and
 2. Run `composer install` to install dependencies
 3. Copy `.env.dist` to `.env` and update with your GitLab instance URL and API key:
 
-```
-GITLAB_URL=https://gitlab.example.com
-GITLAB_API_KEY=your_private_token_here
+   ```
+   GITLAB_URL=https://gitlab.example.com
+   GITLAB_API_KEY=your_private_token_here
+   ```
+
+## Running in Development
+
+You can run the application locally using PHP's built-in server:
+
+```sh
+php -S localhost:8080
 ```
 
-4. Serve the application using your preferred web server (Apache, Nginx, or PHP's built-in server)
+Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Usage
 
@@ -46,6 +55,41 @@ The application uses:
 - JavaScript for frontend interactions
 - CSS for styling
 - GitLab REST API for data retrieval
+
+## Building and Deploying
+
+To build the frontend for production:
+
+```sh
+npm install
+npm run build
+```
+
+After the build completes:
+
+1. Upload the contents of the `dist` directory to your server's web root.
+2. Make sure the `.htaccess` file is also uploaded to the web root.
+3. Ensure your Apache configuration has `mod_rewrite` enabled and `AllowOverride All` set for your directory.
+
+   Example Apache configuration:
+   ```
+   <Directory /var/www/html>
+       AllowOverride All
+   </Directory>
+   ```
+
+4. **If you're using Nginx instead of Apache**, add the following to your server block:
+
+   ```
+   location / {
+       try_files $uri $uri/ /index.html;
+   }
+
+   location ~* \.(js|jsx|tsx|css|json)$ {
+       add_header Content-Type $content_type;
+       add_header Access-Control-Allow-Origin "*";
+   }
+   ```
 
 ## Project Structure
 

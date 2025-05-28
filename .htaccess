@@ -1,0 +1,21 @@
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# If the request is not for a file that exists
+RewriteCond %{REQUEST_FILENAME} !-f
+# If the request is not for a directory that exists
+RewriteCond %{REQUEST_FILENAME} !-d
+# Rewrite all requests to index.html
+RewriteRule ^ index.html [QSA,L]
+
+# Set correct MIME types
+AddType application/javascript .js
+AddType application/javascript .mjs
+AddType text/javascript .jsx
+AddType text/javascript .tsx
+AddType application/json .json
+AddType text/css .css
+
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
