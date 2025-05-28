@@ -19,87 +19,155 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitLab Search Portal</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #FC6D26;
+            --primary-dark: #DB5B1F;
+        }
+        
+        .btn-gitlab {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-gitlab:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+
+        .gitlab-logo {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .highlight {
+            background-color: rgba(252, 109, 38, 0.2);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .project-option {
+            cursor: pointer;
+            padding: 8px 16px;
+        }
+
+        .project-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .selected-project {
+            display: inline-block;
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            margin: 4px;
+            border-radius: 4px;
+        }
+
+        .selected-project .remove {
+            cursor: pointer;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+
+        .selected-project .remove:hover {
+            color: #dc3545;
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <header>
-            <div class="logo">
-                <i class="fa-brands fa-gitlab"></i>
-                <h1>GitLab Search Portal</h1>
-            </div>
-            <?php if (!$configValid): ?>
-                <div class="config-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span>Configuration not complete. Please set up your .env file based on .env.dist template.</span>
+<body class="bg-light">
+    <div class="min-vh-100 d-flex flex-column">
+        <header class="bg-white shadow-sm py-3">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fa-brands fa-gitlab gitlab-logo"></i>
+                        <h1 class="h4 mb-0">GitLab Search Portal</h1>
+                    </div>
+                    <?php if (!$configValid): ?>
+                        <div class="alert alert-warning py-2 px-3 mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span>Configuration not complete. Please set up your .env file based on .env.dist template.</span>
+                        </div>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+            </div>
         </header>
 
-        <main class="content">
-            <div class="search-container">
+        <main class="container my-4 flex-grow-1">
+            <div class="bg-white rounded shadow-sm p-4 mb-4">
                 <form id="searchForm" action="src/search.php" method="post">
-                    <div class="search-row">
-                        <div class="form-group">
-                            <label for="searchString">Search String</label>
-                            <input type="text" id="searchString" name="searchString" placeholder="Enter text to search for..." required>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="searchString" class="form-label">Search String</label>
+                                <input type="text" class="form-control" id="searchString" name="searchString" 
+                                       placeholder="Enter text to search for..." required>
+                            </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="projectFilter">Filter Projects</label>
-                            <div class="project-filter-container">
-                                <input type="text" id="projectFilter" placeholder="Type to filter projects...">
-                                <div id="projectDropdown" class="dropdown-content">
-                                    <div class="loading-projects">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Loading projects...</span>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="projectFilter" class="form-label">Filter Projects</label>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control" id="projectFilter" 
+                                           placeholder="Type to filter projects...">
+                                    <div id="projectDropdown" class="dropdown-menu w-100">
+                                        <div class="p-3 text-center">
+                                            <i class="fas fa-spinner fa-spin me-2"></i>
+                                            <span>Loading projects...</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="search-options">
-                        <div class="form-group checkbox-group">
-                            <label>Search In:</label>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="searchIssues" name="searchIn[]" value="issues" checked>
-                                <label for="searchIssues">Issues</label>
+                    <div class="mb-4">
+                        <label class="form-label">Search In:</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="searchIssues" 
+                                       name="searchIn[]" value="issues" checked>
+                                <label class="form-check-label" for="searchIssues">Issues</label>
                             </div>
-                            <div class="checkbox-container">
-                                <input type="checkbox" id="searchWiki" name="searchIn[]" value="wiki" checked>
-                                <label for="searchWiki">Wiki</label>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="searchWiki" 
+                                       name="searchIn[]" value="wiki" checked>
+                                <label class="form-check-label" for="searchWiki">Wiki</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="selected-projects-container">
-                        <h3>Selected Projects <span id="selectedCount">(0)</span></h3>
-                        <div id="selectedProjects" class="selected-projects"></div>
+                    <div class="mb-4">
+                        <h6 class="mb-2">Selected Projects <span id="selectedCount" class="text-muted">(0)</span></h6>
+                        <div id="selectedProjects" class="d-flex flex-wrap gap-2"></div>
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" id="searchButton" class="btn primary" <?= !$configValid ? 'disabled' : '' ?>>
-                            <i class="fas fa-search"></i> Search
+                    <div class="text-end">
+                        <button type="submit" id="searchButton" class="btn btn-gitlab" <?= !$configValid ? 'disabled' : '' ?>>
+                            <i class="fas fa-search me-2"></i> Search
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div id="results" class="results-container">
-                <div class="results-placeholder">
-                    <i class="fas fa-search"></i>
+            <div id="results" class="bg-white rounded shadow-sm p-4">
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-search fs-1 mb-3 d-block"></i>
                     <p>Enter a search term and select projects to begin</p>
                 </div>
             </div>
         </main>
 
-        <footer>
-            <p>GitLab Search Portal &copy; <?= date('Y') ?></p>
+        <footer class="bg-white border-top py-3 text-center text-muted">
+            <p class="mb-0">GitLab Search Portal &copy; <?= date('Y') ?></p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 </html>
