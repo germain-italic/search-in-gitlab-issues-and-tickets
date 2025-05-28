@@ -1,0 +1,15 @@
+{
+    "name": "gitlab/search-tool",
+    "description": "GitLab multi-project search tool",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AI Assistant",
+            "email": "ai@example.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

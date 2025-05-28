@@ -1,0 +1,5 @@
+# Ignore .env file containing sensitive credentials
+.env
+
+# Ignore vendor directory if composer is used later
+/vendor/
