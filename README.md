@@ -15,7 +15,7 @@ A web application that allows you to search for strings across GitLab issues and
 
 - PHP 7.4 or higher
 - Composer
-- Node.js and npm (for frontend build)
+- Web server (Apache or Nginx)
 - Access to a GitLab instance with API access
 
 ## Installation
@@ -29,75 +29,184 @@ A web application that allows you to search for strings across GitLab issues and
    GITLAB_API_KEY=your_private_token_here
    ```
 
-## Running in Development
+## Development Setup
 
-You can run the application locally using PHP's built-in server:
+### Using PHP's Built-in Server
 
-```sh
+For development, you can use PHP's built-in server:
+
+```bash
+cd /path/to/project
 php -S localhost:8080
 ```
 
 Then open [http://localhost:8080](http://localhost:8080) in your browser.
 
-## Usage
+### Using Apache
 
-1. Open the application in your web browser
-2. Enter a search string in the search field
-3. Select projects from the dropdown
-4. Choose which content types to search (issues, wiki, or both)
-5. Click the "Search" button to see results
+1. Create a virtual host in your Apache configuration:
 
-## Development
-
-The application uses:
-
-- PHP for backend processing
-- JavaScript for frontend interactions
-- CSS for styling
-- GitLab REST API for data retrieval
-
-## Building and Deploying
-
-To build the frontend for production:
-
-```sh
-npm install
-npm run build
+```apache
+<VirtualHost *:80>
+    ServerName gitlab-search.local
+    DocumentRoot /path/to/project
+    
+    <Directory /path/to/project>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog ${APACHE_LOG_DIR}/gitlab-search-error.log
+    CustomLog ${APACHE_LOG_DIR}/gitlab-search-access.log combined
+</VirtualHost>
 ```
 
-After the build completes:
+2. Add the domain to your hosts file:
+```
+127.0.0.1 gitlab-search.local
+```
 
-1. Upload the contents of the `dist` directory to your server's web root.
-2. Make sure the `.htaccess` file is also uploaded to the web root.
-3. Ensure your Apache configuration has `mod_rewrite` enabled and `AllowOverride All` set for your directory.
+3. Restart Apache:
+```bash
+sudo service apache2 restart
+```
 
-   Example Apache configuration:
+### Using Nginx
+
+1. Create a server block in your Nginx configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name gitlab-search.local;
+    root /path/to/project;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;  # Adjust PHP version
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+```
+
+2. Add the domain to your hosts file:
+```
+127.0.0.1 gitlab-search.local
+```
+
+3. Restart Nginx:
+```bash
+sudo service nginx restart
+```
+
+## Production Deployment
+
+### Apache (LAMP) Setup
+
+1. Upload files to your production server:
+```bash
+# Using SFTP or your preferred method
+scp -r * user@your-server:/var/www/gitlab-search/
+```
+
+2. Set proper permissions:
+```bash
+cd /var/www/gitlab-search
+sudo chown -R www-data:www-data .
+sudo chmod -R 755 .
+sudo chmod -R 777 logs    # If you have a logs directory
+```
+
+3. Create Apache virtual host:
+```apache
+<VirtualHost *:80>
+    ServerName search.yourdomain.com
+    DocumentRoot /var/www/gitlab-search
+    
+    <Directory /var/www/gitlab-search>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    ErrorLog ${APACHE_LOG_DIR}/gitlab-search-error.log
+    CustomLog ${APACHE_LOG_DIR}/gitlab-search-access.log combined
+</VirtualHost>
+```
+
+4. Enable the site and restart Apache:
+```bash
+sudo a2ensite gitlab-search.conf
+sudo service apache2 restart
+```
+
+### Nginx (LEMP) Setup
+
+1. Upload files as described above
+
+2. Create Nginx server block:
+```nginx
+server {
+    listen 80;
+    server_name search.yourdomain.com;
+    root /var/www/gitlab-search;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;  # Adjust PHP version
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    # Add security headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+}
+```
+
+3. Enable the site and restart Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/gitlab-search.conf /etc/nginx/sites-enabled/
+sudo service nginx restart
+```
+
+### SSL Configuration
+
+For production, always use HTTPS. You can obtain free SSL certificates using Let's Encrypt:
+
+```bash
+sudo certbot --nginx -d search.yourdomain.com
+```
+
+## Security Considerations
+
+1. Keep your `.env` file secure and never commit it to version control
+2. Use strong API tokens with minimal required permissions
+3. Regularly update dependencies:
+   ```bash
+   composer update
    ```
-   <Directory /var/www/html>
-       AllowOverride All
-   </Directory>
-   ```
-
-4. **If you're using Nginx instead of Apache**, add the following to your server block:
-
-   ```
-   location / {
-       try_files $uri $uri/ /index.html;
-   }
-
-   location ~* \.(js|jsx|tsx|css|json)$ {
-       add_header Content-Type $content_type;
-       add_header Access-Control-Allow-Origin "*";
-   }
-   ```
-
-## Project Structure
-
-- `index.php` - Main entry point
-- `src/` - PHP source files
-- `assets/` - Frontend assets (CSS, JavaScript)
-- `.env` - Configuration file (not in version control)
-- `.env.dist` - Template for configuration file
+4. Configure proper file permissions
+5. Enable HTTPS in production
 
 ## License
 
