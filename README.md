@@ -2,6 +2,8 @@
 
 A web application that allows you to search for strings across GitLab issues and wikis in a self-hosted GitLab instance.
 
+![Sample](screenshots/sample.png)
+
 ## Features
 
 - Project filtering with autocomplete dropdown and multi-select checkboxes
