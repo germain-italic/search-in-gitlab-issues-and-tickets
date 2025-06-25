@@ -7,6 +7,62 @@
     
     --primary-color: #FC6D26;
     --primary-dark: #DB5B1F;
+    --background-color: #fff;
+    --foreground-color: #212529;
+    --card-bg: #fff;
+    --border-color: #dee2e6;
+}
+
+/* Manual dark mode override */
+.dark-mode, .dark-mode body, .dark-mode .bg-light {
+    background-color: #181a1b !important;
+    color: #f1f3f4 !important;
+}
+.dark-mode .bg-white, .dark-mode .card, .dark-mode .shadow-sm, .dark-mode .rounded, .dark-mode .project-results, .dark-mode .result-type, .dark-mode .result-item, .dark-mode .result-excerpt {
+    background-color: #23272b !important;
+    color: #f1f3f4 !important;
+}
+.dark-mode .border-top, .dark-mode .shadow-sm, .dark-mode .rounded, .dark-mode .project-results, .dark-mode .result-type, .dark-mode .result-item {
+    border-color: #33393f !important;
+}
+.dark-mode .form-control, .dark-mode .form-check-input {
+    background-color: #23272b;
+    color: #f1f3f4;
+    border-color: #33393f;
+}
+.dark-mode .form-control:focus {
+    background-color: #23272b;
+    color: #f1f3f4;
+}
+.dark-mode .dropdown-menu {
+    background-color: #23272b;
+    color: #f1f3f4;
+}
+.dark-mode .btn-gitlab {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+.dark-mode .btn-gitlab:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: #fff;
+}
+.dark-mode .highlight {
+    background-color: rgba(252, 109, 38, 0.3);
+    color: #fff;
+}
+.dark-mode .selected-project {
+    background-color: #23272b !important;
+    color: #f1f3f4 !important;
+    border: 1px solid #33393f !important;
+}
+.dark-mode #selectedProjects {
+    color: #f1f3f4 !important;
+}
+.dark-mode .project-option:hover {
+    background-color: #2c3136 !important;
+    color: #f1f3f4 !important;
 }
 
 /* Override Bootstrap's spacing for result types */
@@ -41,6 +97,7 @@
     padding: 4px 8px;
     margin: 4px;
     border-radius: 4px;
+    border: 1px solid #dee2e6;
 }
 
 .selected-project .remove {
@@ -69,4 +126,21 @@
 }
 .result-item {
     margin-bottom: var(--spacing-md);
+}
+
+.dark-mode body {
+    background-color: #181a1b !important;
+    color: #f1f3f4 !important;
+}
+.dark-mode .bg-white {
+    background-color: #23272b !important;
+    color: #f1f3f4 !important;
+}
+.dark-mode :root {
+    --background-color: #181a1b !important;
+    --foreground-color: #f1f3f4 !important;
+    --card-bg: #23272b !important;
+    --border-color: #33393f !important;
+    --primary-color: #FC6D26 !important;
+    --primary-dark: #DB5B1F !important;
 }

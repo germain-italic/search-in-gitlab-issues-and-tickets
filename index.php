@@ -21,7 +21,7 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-<body class="bg-light">
+<body>
     <div class="min-vh-100 d-flex flex-column">
         <header class="bg-white shadow-sm py-3">
             <div class="container">
@@ -30,12 +30,20 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
                         <i class="fa-brands fa-gitlab gitlab-logo"></i>
                         <h1 class="h4 mb-0">GitLab Search Portal</h1>
                     </div>
-                    <?php if (!$configValid): ?>
-                        <div class="alert alert-warning py-2 px-3 mb-0">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <span>Configuration not complete. Please set up your .env file based on .env.dist template.</span>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+                            <label class="form-check-label" for="darkModeSwitch" id="darkModeLabel">
+                                <i class="fas fa-moon"></i>
+                            </label>
                         </div>
-                    <?php endif; ?>
+                        <?php if (!$configValid): ?>
+                            <div class="alert alert-warning py-2 px-3 mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span>Configuration not complete. Please set up your .env file based on .env.dist template.</span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </header>
@@ -112,5 +120,45 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/app.js"></script>
+    <script>
+    // Dark mode logic
+    const darkModeSwitch = document.getElementById('darkModeSwitch');
+    function setDarkMode(enabled) {
+        if (enabled) {
+            document.documentElement.classList.add('dark-mode');
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+        }
+    }
+    // Load preference from localStorage or system
+    function loadDarkModePref() {
+        const stored = localStorage.getItem('darkMode');
+        if (stored === 'dark') return true;
+        if (stored === 'light') return false;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    // Save preference
+    function saveDarkModePref(enabled) {
+        localStorage.setItem('darkMode', enabled ? 'dark' : 'light');
+    }
+    // Initial
+    let darkMode = loadDarkModePref();
+    setDarkMode(darkMode);
+    darkModeSwitch.checked = darkMode;
+    // Listen to switch
+    darkModeSwitch.addEventListener('change', function() {
+        setDarkMode(this.checked);
+        saveDarkModePref(this.checked);
+    });
+    // Listen to system changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        // Only update if user has not set a manual preference
+        const stored = localStorage.getItem('darkMode');
+        if (stored !== 'dark' && stored !== 'light') {
+            setDarkMode(e.matches);
+            darkModeSwitch.checked = e.matches;
+        }
+    });
+    </script>
 </body>
 </html>
