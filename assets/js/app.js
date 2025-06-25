@@ -324,9 +324,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     const issueElement = document.createElement('div');
                     issueElement.className = 'result-item';
                     
+                    // Build labels HTML
+                    let labelsHtml = '';
+                    if (issue.labels && issue.labels.length > 0) {
+                        labelsHtml = issue.labels.map(label => `<span class="badge bg-secondary ms-2">${label}</span>`).join('');
+                    }
+
+                    // Closed icon if needed
+                    let closedIconHtml = '';
+                    if (issue.state && issue.state.toLowerCase() === 'closed') {
+                        closedIconHtml = '<i class="fas fa-lock text-danger me-1" title="Closed"></i>';
+                    }
+
                     issueElement.innerHTML = `
                         <div class="result-item-header">
-                            <div class="result-item-title">#${issue.iid}: ${issue.title}</div>
+                            <div class="result-item-title">${closedIconHtml}#${issue.iid}: ${issue.title}${labelsHtml}</div>
                             <a href="${issue.web_url}" target="_blank" class="result-item-link">
                                 View Issue <i class="fas fa-external-link-alt"></i>
                             </a>

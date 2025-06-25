@@ -142,7 +142,9 @@ try {
                             'iid' => $issue['iid'],
                             'title' => $issue['title'],
                             'excerpt' => $excerpt,
-                            'web_url' => $issue['web_url']
+                            'web_url' => $issue['web_url'],
+                            'labels' => $issue['labels'] ?? [],
+                            'state' => $issue['state'] ?? null
                         ];
                     }
                 }
