@@ -81,7 +81,8 @@ try {
                     'query' => [
                         'search' => $searchString,
                         'scope' => 'all',
-                        'per_page' => 100
+                        'per_page' => 100,
+                        'with_labels_details' => true
                     ]
                 ]);
             };
@@ -142,7 +143,25 @@ try {
                             'iid' => $issue['iid'],
                             'title' => $issue['title'],
                             'excerpt' => $excerpt,
-                            'web_url' => $issue['web_url']
+                            'web_url' => $issue['web_url'],
+                            'labels' => array_map(function($label) {
+                                if (is_array($label)) {
+                                    // Already a label object
+                                    return [
+                                        'name' => $label['name'],
+                                        'color' => $label['color'] ?? '#888',
+                                        'text_color' => $label['text_color'] ?? '#fff'
+                                    ];
+                                } else {
+                                    // Fallback: just a string
+                                    return [
+                                        'name' => $label,
+                                        'color' => '#888',
+                                        'text_color' => '#fff'
+                                    ];
+                                }
+                            }, $issue['labels'] ?? []),
+                            'state' => $issue['state'] ?? null
                         ];
                     }
                 }
