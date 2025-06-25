@@ -327,7 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Build labels HTML
                     let labelsHtml = '';
                     if (issue.labels && issue.labels.length > 0) {
-                        labelsHtml = issue.labels.map(label => `<span class="badge bg-secondary ms-2">${label}</span>`).join('');
+                        labelsHtml = issue.labels.map(labelObj => {
+                            const color = labelObj.color || '#888';
+                            const textColor = labelObj.text_color || '#fff';
+                            return `<span class="badge ms-2" style="background-color: ${color}; color: ${textColor};">${labelObj.name}</span>`;
+                        }).join('');
                     }
 
                     // Closed icon if needed
