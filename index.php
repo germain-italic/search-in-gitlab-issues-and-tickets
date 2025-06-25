@@ -114,7 +114,7 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
         </main>
 
         <footer class="bg-white border-top py-3 text-center text-muted">
-            <p class="mb-0">GitLab Search Portal &copy; <?= date('Y') ?></p>
+            <p class="mb-0">&copy; <?= date('Y') ?> <a href="https://github.com/germain-italic/search-in-gitlab-issues-and-tickets" target="_blank">GitLab Search Portal</a> by <a href="https://github.com/germain-italic" target="_blank">Germain Italic</a></p>
         </footer>
     </div>
 
