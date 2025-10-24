@@ -230,6 +230,11 @@ try {
                 ]);
                 $issues = json_decode($issuesResponse->getBody()->getContents(), true);
 
+                // Skip if no issues found
+                if (empty($issues)) {
+                    continue;
+                }
+
                 // For each issue, fetch its notes (comments)
                 $commentRequests = [];
                 $issueMap = [];
@@ -239,6 +244,11 @@ try {
                     $commentRequests[] = function() use ($client, $projectId, $issue) {
                         return $client->getAsync("projects/{$projectId}/issues/{$issue['iid']}/notes");
                     };
+                }
+
+                // Skip if no comment requests
+                if (empty($commentRequests)) {
+                    continue;
                 }
 
                 // Execute comment requests concurrently

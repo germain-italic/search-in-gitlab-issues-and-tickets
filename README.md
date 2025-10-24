@@ -210,6 +210,48 @@ sudo certbot --nginx -d search.yourdomain.com
 4. Configure proper file permissions
 5. Enable HTTPS in production
 
+## Debugging
+
+### Testing Comment Search
+
+If comment search is not working as expected, use the debug script to test:
+
+```bash
+php debug_comments.php <project_id> <search_term>
+```
+
+Example:
+```bash
+php debug_comments.php 123 "exception"
+```
+
+This will show:
+- How many issues are in the project
+- How many comments each issue has
+- Which comments match your search term
+- The full URL to each matching comment
+
+### Viewing PHP Errors
+
+To see detailed error messages during development:
+
+```bash
+php -S localhost:8080 -d display_errors=1 -d error_reporting=E_ALL
+```
+
+### Common Issues
+
+**No results found for comments:**
+- Verify the project has issues with comments
+- Check that the "Comments" checkbox is enabled
+- Ensure your API token has access to read issue notes
+- Try the debug script to see if comments are being fetched
+
+**Slow search performance:**
+- The comment search fetches all issues and their notes
+- For projects with many issues (>100), pagination may be needed
+- Consider increasing the `per_page` limit or implementing pagination
+
 ## License
 
 MIT
