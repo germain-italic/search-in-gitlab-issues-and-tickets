@@ -123,6 +123,25 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
         </footer>
     </div>
 
+    <!-- Progress Notification -->
+    <div id="progressNotification" class="progress-notification" style="display: none;">
+        <div class="progress-notification-header">
+            <span class="progress-notification-title">
+                <i class="fas fa-spinner fa-spin me-2"></i>
+                <span id="progressTitle">Searching...</span>
+            </span>
+            <button class="progress-notification-close" onclick="document.getElementById('progressNotification').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="progress-notification-body" id="progressBody">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="progress-details" id="progressDetails"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/app.js"></script>
     <script>

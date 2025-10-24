@@ -34,14 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
      * Fetch projects from the GitLab API
      */
     function fetchProjects() {
-        // Show loading state
+        // Show progress notification
+        showProgressNotification();
+        updateProgress(0, 'Loading projects...');
+        addProgressDetail('Fetching projects from GitLab...', 'loading');
+
+        // Show loading state in dropdown
         projectDropdown.innerHTML = `
             <div class="loading-projects">
                 <i class="fas fa-spinner fa-spin"></i>
                 <span>Loading projects...</span>
             </div>
         `;
-        
+
         // Fetch projects from API
         fetch('src/get_projects.php')
             .then(response => {
@@ -53,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 projects = data;
                 renderProjectOptions(projects);
+                updateProgressDetail(0, `✓ Loaded ${projects.length} project(s)`, 'success');
+                updateProgress(100, 'Projects loaded');
+                setTimeout(() => hideProgressNotification(), 2000);
             })
             .catch(error => {
                 projectDropdown.innerHTML = `
@@ -61,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span>Error: ${error.message}</span>
                     </div>
                 `;
+                updateProgressDetail(0, `✗ Error: ${error.message}`, 'error');
                 console.error('Error fetching projects:', error);
             });
     }
@@ -239,47 +248,100 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function handleSearch(event) {
         event.preventDefault();
-        
-        // Check if any projects are selected
+
         if (selectedProjectIds.length === 0) {
             alert('Please select at least one project to search');
             return;
         }
-        
-        // Show loading state
-        results.innerHTML = `
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Searching GitLab...</p>
-            </div>
-        `;
-        
-        // Collect form data
-        const formData = new FormData(searchForm);
-        
-        // Send search request
-        fetch('src/search.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Search failed');
+
+        const searchString = document.getElementById('searchString').value;
+        const searchIn = [];
+        if (document.getElementById('searchIssues').checked) searchIn.push('issues');
+        if (document.getElementById('searchWiki').checked) searchIn.push('wiki');
+        if (document.getElementById('searchComments').checked) searchIn.push('comments');
+
+        showProgressNotification();
+        updateProgress(0, 'Searching...');
+        results.innerHTML = '';
+
+        const allResults = {};
+        searchProjectsSequentially(0);
+
+        function searchProjectsSequentially(index) {
+            if (index >= selectedProjectIds.length) {
+                const totalResults = Object.keys(allResults).length;
+                updateProgress(100, 'Search complete');
+                if (totalResults === 0) {
+                    results.innerHTML = '<div class="no-results"><i class="fas fa-search"></i><p>No results found.</p></div>';
+                }
+                setTimeout(() => hideProgressNotification(), 3000);
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
-            renderResults(data);
-        })
-        .catch(error => {
-            results.innerHTML = `
-                <div class="error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Error: ${error.message}</p>
-                </div>
-            `;
-            console.error('Search error:', error);
-        });
+
+            const projectId = selectedProjectIds[index];
+            const projectName = projects.find(p => p.id === projectId)?.name || `Project ${projectId}`;
+            const progressPercent = Math.round((index / selectedProjectIds.length) * 100);
+
+            updateProgress(progressPercent, 'Searching...');
+            addProgressDetail(`Searching ${projectName}...`, 'loading');
+
+            const formData = new FormData();
+            formData.append('projectId', projectId);
+            formData.append('searchString', searchString);
+            formData.append('searchIn', JSON.stringify(searchIn));
+
+            fetch('src/search_project.php', { method: 'POST', body: formData })
+                .then(r => r.ok ? r.json() : Promise.reject('Failed'))
+                .then(data => {
+                    const count = (data.issues?.length || 0) + (data.wiki?.length || 0) + (data.comments?.length || 0);
+                    if (count > 0) {
+                        allResults[projectId] = data;
+                        updateProgressDetail(index, `✓ ${projectName}: ${count} result(s)`, 'success');
+                        renderResults(allResults);
+                    } else {
+                        updateProgressDetail(index, `✓ ${projectName}: No results`, 'success');
+                    }
+                    searchProjectsSequentially(index + 1);
+                })
+                .catch(() => {
+                    updateProgressDetail(index, `✗ ${projectName}: Error`, 'error');
+                    searchProjectsSequentially(index + 1);
+                });
+        }
+    }
+
+    function showProgressNotification() {
+        document.getElementById('progressNotification').style.display = 'block';
+        document.getElementById('progressDetails').innerHTML = '';
+    }
+
+    function hideProgressNotification() {
+        document.getElementById('progressNotification').style.display = 'none';
+    }
+
+    function updateProgress(percent, title) {
+        document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('progressTitle').textContent = title;
+    }
+
+    function addProgressDetail(text, status = 'loading') {
+        const detailsDiv = document.getElementById('progressDetails');
+        const item = document.createElement('div');
+        item.className = `progress-item ${status}`;
+        item.dataset.index = detailsDiv.children.length;
+        const icons = { loading: 'fa-spinner fa-spin', success: 'fa-check-circle', error: 'fa-times-circle' };
+        item.innerHTML = `<i class="fas ${icons[status]}"></i><span>${text}</span>`;
+        detailsDiv.appendChild(item);
+        detailsDiv.scrollTop = detailsDiv.scrollHeight;
+    }
+
+    function updateProgressDetail(index, text, status) {
+        const item = document.getElementById('progressDetails').querySelector(`[data-index="${index}"]`);
+        if (item) {
+            item.className = `progress-item ${status}`;
+            const icons = { loading: 'fa-spinner fa-spin', success: 'fa-check-circle', error: 'fa-times-circle' };
+            item.innerHTML = `<i class="fas ${icons[status]}"></i><span>${text}</span>`;
+        }
     }
     
     /**
@@ -302,11 +364,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Iterate through projects
         Object.keys(data).forEach(projectId => {
             const projectData = data[projectId];
-            const projectName = projectData.name;
-            
+            const projectName = projectData.projectName || projectData.name || 'Unknown Project';
+
             const projectElement = document.createElement('div');
             projectElement.className = 'project-results';
-            
+
             projectElement.innerHTML = `<h2>${projectName}</h2>`;
             
             // Check if there are any results for this project
