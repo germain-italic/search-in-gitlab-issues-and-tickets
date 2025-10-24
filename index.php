@@ -80,14 +80,19 @@ $configValid = isset($_ENV['GITLAB_URL']) && isset($_ENV['GITLAB_API_KEY']);
                         <label class="form-label">Search In:</label>
                         <div class="d-flex gap-4">
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="searchIssues" 
+                                <input type="checkbox" class="form-check-input" id="searchIssues"
                                        name="searchIn[]" value="issues" checked>
                                 <label class="form-check-label" for="searchIssues">Issues</label>
                             </div>
                             <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="searchWiki" 
+                                <input type="checkbox" class="form-check-input" id="searchWiki"
                                        name="searchIn[]" value="wiki" checked>
                                 <label class="form-check-label" for="searchWiki">Wiki</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="searchComments"
+                                       name="searchIn[]" value="comments" checked>
+                                <label class="form-check-label" for="searchComments">Comments</label>
                             </div>
                         </div>
                     </div>

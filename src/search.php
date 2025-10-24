@@ -98,6 +98,9 @@ try {
                 ]);
             };
         }
+
+        // For comments search, we'll need to fetch issues first, then their notes
+        // We'll handle this separately after the initial requests are processed
     }
     
     // Execute requests concurrently
@@ -205,11 +208,107 @@ try {
         }
         
         // Remove projects with no results
-        if (!isset($results[$projectId]['issues']) && !isset($results[$projectId]['wiki'])) {
+        if (!isset($results[$projectId]['issues']) && !isset($results[$projectId]['wiki']) && !isset($results[$projectId]['comments'])) {
             unset($results[$projectId]);
         }
     }
-    
+
+    // Search in comments if requested
+    if (in_array('comments', $searchIn)) {
+        foreach ($projectIds as $projectId) {
+            if (!isset($projectDetails[$projectId])) {
+                continue;
+            }
+
+            // First, get all issues for this project
+            try {
+                $issuesResponse = $client->request('GET', "projects/{$projectId}/issues", [
+                    'query' => [
+                        'scope' => 'all',
+                        'per_page' => 100
+                    ]
+                ]);
+                $issues = json_decode($issuesResponse->getBody()->getContents(), true);
+
+                // For each issue, fetch its notes (comments)
+                $commentRequests = [];
+                $issueMap = [];
+
+                foreach ($issues as $issue) {
+                    $issueMap[$issue['iid']] = $issue;
+                    $commentRequests[] = function() use ($client, $projectId, $issue) {
+                        return $client->getAsync("projects/{$projectId}/issues/{$issue['iid']}/notes");
+                    };
+                }
+
+                // Execute comment requests concurrently
+                $commentResponses = [];
+                $commentPool = new Pool($client, $commentRequests, [
+                    'concurrency' => 10,
+                    'fulfilled' => function($response, $index) use (&$commentResponses) {
+                        $commentResponses[$index] = $response;
+                    },
+                    'rejected' => function($reason, $index) use (&$commentResponses) {
+                        $commentResponses[$index] = $reason;
+                    }
+                ]);
+
+                $commentPromise = $commentPool->promise();
+                $commentPromise->wait();
+
+                // Process comments
+                $filteredComments = [];
+                $issueIndex = 0;
+
+                foreach ($issues as $issue) {
+                    if (isset($commentResponses[$issueIndex]) && !($commentResponses[$issueIndex] instanceof \Exception)) {
+                        $notesResponse = $commentResponses[$issueIndex];
+                        $notes = json_decode($notesResponse->getBody()->getContents(), true);
+
+                        foreach ($notes as $note) {
+                            // Skip system notes (e.g., "changed the description", "closed this issue")
+                            if (isset($note['system']) && $note['system']) {
+                                continue;
+                            }
+
+                            // Check if the comment body contains the search string
+                            if (stripos($note['body'] ?? '', $searchString) !== false) {
+                                $excerpt = extractExcerpt($note['body'] ?? '', $searchString);
+
+                                $filteredComments[] = [
+                                    'id' => $note['id'],
+                                    'issue_iid' => $issue['iid'],
+                                    'issue_title' => $issue['title'],
+                                    'issue_url' => $issue['web_url'],
+                                    'author' => $note['author']['name'] ?? 'Unknown',
+                                    'created_at' => $note['created_at'] ?? null,
+                                    'excerpt' => $excerpt,
+                                    'web_url' => $issue['web_url'] . '#note_' . $note['id']
+                                ];
+                            }
+                        }
+                    }
+                    $issueIndex++;
+                }
+
+                if (!empty($filteredComments)) {
+                    if (!isset($results[$projectId])) {
+                        $results[$projectId] = [
+                            'id' => $projectId,
+                            'name' => $projectDetails[$projectId]['name'],
+                            'searchString' => $searchString
+                        ];
+                    }
+                    $results[$projectId]['comments'] = $filteredComments;
+                }
+
+            } catch (GuzzleException $e) {
+                // Skip projects that can't be accessed
+                continue;
+            }
+        }
+    }
+
     echo json_encode($results);
     
 } catch (Exception | GuzzleException $e) {

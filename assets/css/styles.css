@@ -127,6 +127,12 @@
 .result-item {
     margin-bottom: var(--spacing-md);
 }
+.result-meta {
+    font-size: 0.875rem;
+}
+.dark-mode .result-meta {
+    color: #adb5bd !important;
+}
 
 .dark-mode body {
     background-color: #181a1b !important;

@@ -359,15 +359,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Wiki section
             if (projectData.wiki && projectData.wiki.length > 0) {
                 hasResults = true;
-                
+
                 const wikiSection = document.createElement('div');
                 wikiSection.className = 'result-type';
                 wikiSection.innerHTML = `<h3>Wiki</h3>`;
-                
+
                 projectData.wiki.forEach(page => {
                     const wikiElement = document.createElement('div');
                     wikiElement.className = 'result-item';
-                    
+
                     wikiElement.innerHTML = `
                         <div class="result-item-header">
                             <div class="result-item-title">${page.title}</div>
@@ -377,13 +377,53 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                         <div class="result-excerpt">${highlightSearchTerm(page.excerpt, projectData.searchString)}</div>
                     `;
-                    
+
                     wikiSection.appendChild(wikiElement);
                 });
-                
+
                 projectElement.appendChild(wikiSection);
             }
-            
+
+            // Comments section
+            if (projectData.comments && projectData.comments.length > 0) {
+                hasResults = true;
+
+                const commentsSection = document.createElement('div');
+                commentsSection.className = 'result-type';
+                commentsSection.innerHTML = `<h3>Comments</h3>`;
+
+                projectData.comments.forEach(comment => {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'result-item';
+
+                    // Format date if available
+                    let dateString = '';
+                    if (comment.created_at) {
+                        const date = new Date(comment.created_at);
+                        dateString = ` on ${date.toLocaleDateString()}`;
+                    }
+
+                    commentElement.innerHTML = `
+                        <div class="result-item-header">
+                            <div class="result-item-title">
+                                <i class="fas fa-comment me-2"></i>Comment on #${comment.issue_iid}: ${comment.issue_title}
+                            </div>
+                            <a href="${comment.web_url}" target="_blank" class="result-item-link">
+                                View Comment <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                        <div class="result-meta text-muted mb-2">
+                            <i class="fas fa-user me-1"></i>${comment.author}${dateString}
+                        </div>
+                        <div class="result-excerpt">${highlightSearchTerm(comment.excerpt, projectData.searchString)}</div>
+                    `;
+
+                    commentsSection.appendChild(commentElement);
+                });
+
+                projectElement.appendChild(commentsSection);
+            }
+
             // Only add project to results if it has results
             if (hasResults) {
                 results.appendChild(projectElement);
