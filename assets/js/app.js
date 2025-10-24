@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             projectElement.querySelector('.remove').addEventListener('click', function() {
-                const projectId = this.getAttribute('data-id');
+                const projectId = parseInt(this.getAttribute('data-id'), 10);
                 selectedProjectIds = selectedProjectIds.filter(id => id !== projectId);
                 updateSelectedProjects();
                 renderProjectOptions(filterProjectsList(projectFilter.value));
